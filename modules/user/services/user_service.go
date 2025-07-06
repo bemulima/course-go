@@ -6,33 +6,39 @@ import (
 )
 
 type UserService interface {
-	CreateUser(user models.User) (models.User, error)
+	CreateUser(user *models.User) (models.User, error)
 	GetUser(id int) (models.User, error)
-	UpdateUser(user models.User, id int) (models.User, error)
+	UpdateUser(user *models.User, id int) (models.User, error)
 }
 
 type userService struct {
-	userRepo repositories.UserRepository
+	repo repositories.UserRepository
 }
 
-func NewUserService(userRepo repositories.UserRepository) UserService {
+func NewUserService(repo repositories.UserRepository) UserService {
 	return &userService{
-		userRepo: userRepo,
+		repo: repo,
 	}
 }
 
-func (s *userService) GetUser() (user models.User, err error) {
-	return s.userRepo.GetUser()
-}
-
-func (s *userService) CreateUser(user models.User) (models.User, error) {
-	return s.userRepo.CreateUser(user)
+func (s *userService) CreateUser(user *models.User) (models.User, error) {
+	if err := s.repo.Create(user); err != nil {
+		return models.User{}, err // Return empty user and the error
+	}
+	return *user, nil
 }
 
 func (s *userService) GetUser(id int) (models.User, error) {
-	return s.userRepo.GetUser(id)
+	user, err := s.repo.FindById(id)
+	if err != nil {
+		return models.User{}, err
+	}
+	return *user, nil
 }
 
-func (s *userService) UpdateUser(user models.User, id int) (models.User, error) {
-	return s.userRepo.UpdateUser(user, id)
+func (s *userService) UpdateUser(user *models.User, id int) (models.User, error) {
+	if err := s.repo.Update(user); err != nil {
+		return models.User{}, err // Return empty user and the error
+	}
+	return *user, nil
 }
