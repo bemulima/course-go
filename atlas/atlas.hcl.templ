@@ -1,0 +1,30 @@
+
+data "external_schema" "gorm" {
+  program = [
+    "go",
+    "run",
+    "-mod=mod",
+    "ariga.io/atlas-provider-gorm",
+    "load",
+    "--path", "./modules/user/models",
+    "--dialect", "postgres"
+  ]
+}
+
+env "gorm" {
+  dialect = "postgres"
+  src = data.external_schema.gorm.url
+
+  dev = "postgres://{{.User}}:{{.Password}}@{{.Host}}:{{.Port}}/{{.DevName}}?sslmode=disable"
+  url = "postgres://{{.User}}:{{.Password}}@{{.Host}}:{{.Port}}/{{.Name}}?sslmode=disable"
+
+  migration {
+    dir = "file://modules/user/migrations"
+  }
+
+  format {
+    migrate {
+      diff = "{{`{{ sql . \"  \" }}`}}"
+    }
+  }
+}
