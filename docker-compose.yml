@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16.4
+    environment:
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_NAME}"
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  atlas:
+    image: ariga/atlas:0.26.0
+    depends_on:
+      - postgres
+    environment:
+      - ATLAS_DB_URL=postgres://user:password@postgres:"${DB_PORT}"/"${DB_NAME}"?sslmode=disable
+    volumes:
+      - ./migrations:/migrations
+    command:
+      [
+        "migrate",
+        "apply",
+        "--url",
+        "${ATLAS_DB_URL}",
+        "--dir",
+        "file:///migrations",
+      ]
+    networks:
+      - app-network
+
+  golang:
+    image: golang:1.23.1
+    depends_on:
+      - postgres
+    volumes:
+      - ./app:/go/src/app
+    working_dir: /go/src/app
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgres://user:password@postgres:5432/myapp?sslmode=disable
+    command: ["go", "run", "main.go"]
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
