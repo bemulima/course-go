@@ -1,21 +1,15 @@
 package services
 
 import (
+	"course-go/modules/user/interfaces"
 	"course-go/modules/user/models"
-	"course-go/modules/user/repositories"
 )
 
-type UserService interface {
-	CreateUser(user *models.User) (models.User, error)
-	GetUser(id int) (models.User, error)
-	UpdateUser(user *models.User, id int) (models.User, error)
-}
-
 type userService struct {
-	repo repositories.UserRepository
+	repo interfaces.UserRepository
 }
 
-func NewUserService(repo repositories.UserRepository) UserService {
+func NewUserService(repo interfaces.UserRepository) interfaces.UserService {
 	return &userService{
 		repo: repo,
 	}

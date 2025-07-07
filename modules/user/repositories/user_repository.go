@@ -1,23 +1,17 @@
 package repositories
 
 import (
+	"course-go/modules/user/interfaces"
 	"course-go/modules/user/models"
 
 	"gorm.io/gorm"
 )
 
-type UserRepository interface {
-	FindByEmail(email string) (*models.User, error)
-	Create(user *models.User) error
-	FindById(id int) (*models.User, error)
-	Update(user *models.User) error
-}
-
 type userRepository struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) UserRepository {
+func NewUserRepository(db *gorm.DB) interfaces.UserRepository {
 	return &userRepository{db: db}
 }
 
